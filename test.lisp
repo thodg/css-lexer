@@ -85,6 +85,3 @@
         (let ((result (test arg)))
           (compare-result result expected))))
     (format t "; Passed tests ~A/~A total~%" *success* count)))
-
-(untrace token-stream::subseq*
-         token-stream:make-token)
