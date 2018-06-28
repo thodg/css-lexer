@@ -49,7 +49,9 @@
     ("body { color: #f00; }"
      ident-token whitespace-token {-token whitespace-token
      ident-token colon-token whitespace-token hash-token semicolon-token
-     whitespace-token }-token eof-token)))
+     whitespace-token }-token eof-token)
+    ("/* comment */"
+     comment-token eof-token)))
 
 (defvar *success*)
 
