@@ -3,7 +3,7 @@
 
 (defclass css-lexer (lexer) ())
 
-(defgeneric match-comment (lexer))
+(defgeneric comment-token (lexer))
 (defgeneric match-newline (lexer))
 (defgeneric match-whitespace (lexer))
 (defgeneric match-hex-digit (lexer))
@@ -91,9 +91,9 @@
 
 (defmethod comment-token ((lx lexer))
   (push-token lx)
-  (if (match lx "/*")
-      (progn (match-until lx "*/")
-	     (make-token lx 'comment-token))
+  (or (and (match lx "/*")
+           (match-until lx "*/")
+           (make-token lx 'comment-token))
       (discard-token lx)))
 
 (let ((rn (coerce '(#\Return #\Newline) 'string)))
