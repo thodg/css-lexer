@@ -11,6 +11,7 @@
   (:export
    #:run
    #:simple-test
+   #:test
    #:test-file))
 
 (in-package :css-lexer/test)
@@ -31,7 +32,8 @@
 (defmethod test ((path pathname))
   (with-stream (css (css-lexer
                      (babel-input-stream
-                      (unistd-stream-open path :read t))))
+                      (unistd-stream-open
+                       (namestring path) :read t))))
     (let ((result))
       (loop
          (multiple-value-bind (token state) (stream-read css)
