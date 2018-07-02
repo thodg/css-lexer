@@ -109,20 +109,20 @@
       (match-newline lx)))
 
 (defmethod match-hex-digit ((lx css-lexer))
-  (let ((c (the fixnum (lexer-match-char lx 0))))
+  (let ((c (the fixnum (matcher-char lx 0))))
     (when (or (<= (char-code #\0) c (char-code #\9))
 	      (<= (char-code #\a) c (char-code #\f))
 	      (<= (char-code #\A) c (char-code #\F)))
-      (incf (the fixnum (lexer-match-start lx))))))
+      (incf (the fixnum (matcher-start lx))))))
        
 (defmethod match-escape ((lx css-lexer))
   (match-sequence lx
     (and (match lx #\\)
 	 (or (when (match-times lx #'match-hex-digit 1 6)
 	       (match-whitespace lx)
-	       (lexer-match-start lx))
+	       (matcher-start lx))
 	     (when (not (match-newline lx))
-	       (lexer-match-start lx))))))
+	       (matcher-start lx))))))
 
 (defmethod whitespace-token ((lx css-lexer))
   (push-token lx)
@@ -135,14 +135,14 @@
 
 (defmethod match-ident-char ((lx css-lexer))
   (or (match-escape lx)
-      (let ((c (the character (lexer-match-char lx 0))))
+      (let ((c (the character (matcher-char lx 0))))
 	(when (or (char<= #\a c #\z)
 		  (char<= #\A c #\Z)
 		  (char<= #\0 c #\9)
 		  (char=  #\_ c)
 		  (char=  #\- c)
 		  (<  #x007F (char-code c)))
-	  (incf (the fixnum (lexer-match-start lx)))))))
+	  (incf (the fixnum (matcher-start lx)))))))
 
 (defmethod match-ident-char* ((lx css-lexer))
   (match-times lx #'match-ident-char 0 nil))
@@ -152,12 +152,12 @@
     (push-token lx)
     (match lx #\-)
     (cond ((or (match-escape lx)
-	       (let ((c (the character (lexer-match-char lx 0))))
+	       (let ((c (the character (matcher-char lx 0))))
 		 (when (or (char<= #\a c #\z)
 			   (char<= #\A c #\Z)
 			   (char=  #\_ c)
 			   (<  #x007F (char-code c)))
-		   (incf (the fixnum (lexer-match-start lx))))))
+		   (incf (the fixnum (matcher-start lx))))))
 	   (match-ident-char* lx)
 	   (make-token lx 'ident-token))
 	  (t
@@ -219,12 +219,12 @@
       (make-token lx 'string-token)))
 
 (defmethod match-non-printable ((lx css-lexer))
-  (let ((c (the fixnum (lexer-match-char lx 0))))
+  (let ((c (the fixnum (matcher-char lx 0))))
     (when (or (<= #x0000 c #x0008)
 	      (=  #x000B c)
 	      (<= #x000E c #x001F)
 	      (=  #x007F c))
-      (incf (the fixnum (lexer-match-start lx))))))
+      (incf (the fixnum (matcher-start lx))))))
 
 (defmethod match-url-unquoted-char ((lx css-lexer))
   (or (match-escape lx)
@@ -259,9 +259,9 @@
       (discard-token lx)))
 
 (defmethod match-digit ((lx css-lexer))
-  (let ((c (the character (lexer-match-char lx 0))))
+  (let ((c (the character (matcher-char lx 0))))
     (when (char<= #\0 c #\9)
-      (incf (the fixnum (lexer-match-start lx))))))
+      (incf (the fixnum (matcher-start lx))))))
 
 (defmethod match-digit+ ((lx css-lexer))
   (match-times lx #'match-digit 1 nil))
@@ -287,7 +287,7 @@
 			    (match lx #\+)
 			    t)
 			(match-digit+ lx)))
-		 (lexer-match-start lx))))
+		 (matcher-start lx))))
       (make-token lx 'number-token)
       (discard-token lx)))
 
@@ -324,10 +324,10 @@
 			(match lx #\-)
 			(match-times lx #'match-hex-digit 1 6)))
 		 (match-sequence lx
-		   (let ((start (the fixnum (lexer-match-start lx))))
+		   (let ((start (the fixnum (matcher-start lx))))
 		     (and (match-times lx #'match-hex-digit 0 5)
 			  (let ((digits (- (the fixnum
-                                                (lexer-match-start lx))
+                                                (matcher-start lx))
                                            start)))
                             (declare (type fixnum digits))
 			    (match-times lx (lambda (lx) (match lx #\?))
@@ -439,11 +439,11 @@
       (discard-token lx)))
 
 (defmethod eof-token ((lx css-lexer))
-  (unless (lexer-input-n lx 1)
+  (unless (matcher-input-n lx 1)
     (push-token lx)
-    (cond ((and (lexer-input-ended lx)
-                (= (lexer-match-start lx)
-                   (fill-pointer (lexer-buffer lx))))
+    (cond ((and (matcher-input-ended lx)
+                (= (matcher-start lx)
+                   (fill-pointer (stream-input-buffer lx))))
            (setf (lexer-eof-p lx) t)
            (make-token lx 'eof-token))
           (t
@@ -451,8 +451,8 @@
 
 (defmethod delim-token ((lx css-lexer))
   (push-token lx)
-  (lexer-input-n lx 1)
-  (incf (the fixnum (lexer-match-start lx)))
+  (matcher-input-n lx 1)
+  (incf (the fixnum (matcher-start lx)))
   (make-token lx 'delim-token))
 
 ;;  CSS lexer

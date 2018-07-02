@@ -21,6 +21,7 @@
 (defpackage :css-lexer
   (:use :cl-stream
         :common-lisp
+        :matcher-stream
         :token-stream)
   #.(cl-stream:shadowing-import-from)
   (:export
